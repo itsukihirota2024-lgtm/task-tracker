@@ -431,14 +431,18 @@
       const API_URL = 'https://script.google.com/macros/s/AKfycbzmptDpw5oYfch4GJb3utp9nU1QCJJZCZ1d0i2ZCi-q_61Ek5NEr7H_3tUzCf3t5kjS6g/exec';
       const TOKEN_KEY = 'task-tracker-token';
 
+      // トークンは URL の #token= に残す。iOS のホーム画面アプリは Safari と保存領域が別で、
+      // 追加時の URL だけが引き継がれるため、URL から消すとホーム画面版が未設定になる
       function apiToken() {
         const m = location.hash.match(/token=([0-9a-f]+)/);
         if (m) {
           try { localStorage.setItem(TOKEN_KEY, m[1]); } catch (e) {}
-          history.replaceState(null, '', location.pathname + location.search);
           return m[1];
         }
-        try { return localStorage.getItem(TOKEN_KEY) || ''; } catch (e) { return ''; }
+        let saved = '';
+        try { saved = localStorage.getItem(TOKEN_KEY) || ''; } catch (e) {}
+        if (saved) history.replaceState(null, '', location.pathname + location.search + '#token=' + saved);
+        return saved;
       }
 
       async function callServer(method, args) {
